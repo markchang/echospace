@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+
+	function parseArtists(artists, callback) {
+		callback(artists);
+	};
+	
+	function searchMyspace(artists, callback) {
+		var xhr = new XMLHttpRequest();
+		var artist_array = [];
+		
+		for ( var artist in artists ) {
+			var artist_name = artists[artist].name;
+			var url = 'http://api.myspace.com/opensearch/people'
+						+ '?count=1'
+						+ '&format=json'
+						+ '&searchTerms='+ artist_name ;
+			xhr.open('GET', url, false);
+			xhr.send();
+			if( xhr.status == 200 ) {
+				var data = JSON.parse(xhr.responseText);
+				artist_array.push({artist:artist_name,
+					profileUrl:data.entry[0].profileUrl});
+			}
+		}
+		
+		callback(artist_array);
+	};
+
+	// find neighboring artists through echonest
+	function findSimilarArtists(artist, callback) {
+		var APIKEY = '';
+        var xhr = new XMLHttpRequest();
+
+		// xhr response handler
+        xhr.onreadystatechange = function() {
+			if (xhr.readyState == 4) {
+				if (xhr.status == 200) {
+					var data = JSON.parse(xhr.responseText);
+					//parseArtists(data.response.artists, callback);
+					searchMyspace(data.response.artists, callback);
+				} else {
+					callback(null);
+				}
+			}
+		}
+		
+		// grab list of similar artists from echonest
+		var url = "http://developer.echonest.com/api/v4/artist/similar?api_key=DAG6N3TUP4BG7V6HE&name="+artist+"&format=json&results=5"
+        xhr.open('GET', url, true);
+		xhr.send();
+	};
+	
+	// handle contentscript request to find artist
+	function onRequest(request, sender, callback) {
+	    if (request.data) {
+			var artist = request.data
+	        console.log("Found some shit: " + artist);
+	
+			findSimilarArtists( artist, callback );
+	    }
+	};
+
+	// plug in the listener
+	chrome.extension.onRequest.addListener(onRequest);
+    </script>
+  </head>
+</html>

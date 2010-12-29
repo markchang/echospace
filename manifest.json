@@ -1,0 +1,16 @@
+{
+  "name": "echospace",
+  "version": "0.2",
+  "description": "Mixes myspace with the echonest for artist recommendations",
+  "background_page" : "background.html",
+  "permissions": [
+    "http://api.myspace.com/",
+    "http://developer.echonest.com/"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://*.myspace.com/*"],
+      "js": ["contentscript.js"]
+    }
+  ]
+}
